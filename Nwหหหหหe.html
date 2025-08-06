@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>รายละเอียดรูปภาพ</title>
+ <link rel="stylesheet" href="css/all.css"> <!-- เชื่อมโยงไปยังไฟล์ CSS เดิมของคุณ -->
+</head>
+<body>
+
+ <!-- Navbar (จากงานเก่า - ลบปุ่มค้นหาออก) -->
+ <div class="navbar">
+  <button class="menu-button" onclick="toggleMenu()">☰ เมนู</button>
+  <a href="index.html" class="logo">BETA</a>
+  <!-- ปุ่มค้นหาถูกลบออกแล้ว -->
+ </div>
+
+ <!-- Dropdown Menu (จากงานเก่า) -->
+ <div id="dropdown" class="dropdown">
+  <a href="#about">เกี่ยวกับเรา</a>
+  <a href="#services">บริการ</a>
+  <a href="#contact">ติดต่อ</a>
+ </div>
+
+ <!-- Main Content Area -->
+ <div class="main-content">
+  <div class="image-section">
+   <img id="detail-image" src="" alt="รูปภาพหลัก" class="large-image">
+  </div>
+
+  <div class="details-section">
+   <div class="detail-title" id="detail-title"></div>
+   <div class="detail-code" id="detail-code"></div>
+
+   <div class="detail-tags-label">แท็ก:</div>
+   <div class="detail-tags-container" id="detail-tags-container">
+    <!-- แท็กจะถูกโหลดที่นี่ด้วย JavaScript -->
+   </div>
+   <!-- ปุ่มแก้ไขแท็กถูกลบออก เนื่องจากหน้า detail ไม่ควรแก้ไขข้อมูลโดยตรง -->
+   <!-- <button id="editTagsButton">แก้ไขแท็ก</button> -->
+
+   <div class="description-area" id="description-area">
+    <!-- รายละเอียดจะถูกโหลดที่นี่ด้วย JavaScript -->
+   </div>
+  </div>
+ </div>
+
+ <!-- Modal สำหรับแก้ไขแท็ก (ถูกซ่อนไว้หรือลบออกในหน้านี้) -->
+ <div id="tagEditModal" class="tag-edit-modal" style="display: none;">
+  <div class="tag-edit-modal-content">
+   <h3>แก้ไขแท็ก</h3>
+   <textarea id="tagEditTextarea" class="tag-edit-textarea" placeholder="ใส่แท็กแต่ละบรรทัด ตัวอย่าง:&#10;✔️ แท็กที่ 1&#10;❌ แท็กที่ 2"></textarea>
+   <div class="tag-edit-buttons">
+    <button id="saveTagsButton">บันทึก</button>
+    <button id="cancelTagsButton" class="cancel-button">ยกเลิก</button>
+   </div>
+  </div>
+ </div>
+
+ <script type="module">
+  // Import the functions you need from the Firebase SDKs
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+  import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+  import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+  // --- การตั้งค่า Firebase ของคุณเอง (สำหรับรันนอก Canvas หรือบน Neocities) ---
+  const firebaseConfig = {
+    apiKey: "AIzaSyBDdPmBy688gYV9eSSFYB-Cg_HMOOIVDgc",
+    authDomain: "bata-ac6eb.firebaseapp.com",
+    projectId: "bata-ac6eb",
+    storageBucket: "bata-ac6eb.firebasestorage.app",
+    messagingSenderId: "462889325937",
+    appId: "1:462889325937:web:183f5a6a7738967f49d2d0",
+    measurementId: "G-Z3FK4FW02Z" 
+  };
+
+  // กำหนด appId ด้วย projectId ของคุณ (สำหรับใช้ใน path ของ Firestore)
+  const appId = firebaseConfig.projectId; 
+
+  // initialAuthToken สามารถตั้งเป็น null ได้ หากคุณไม่ได้ใช้ระบบยืนยันตัวตนแบบ Custom Token
+  const initialAuthToken = null; 
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+  console.log("Firebase initialized.");
+
+  let userId = null; // Will be set after authentication
+
+  // Authenticate user anonymously or with token
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      userId = user.uid;
+      console.log("Authenticated with UID:", userId);
+      // Once authenticated, set up real-time listener for the specific image
+      setupRealtimeListenerForDetailPage();
+    } else {
+      console.log("User not authenticated. Attempting sign-in...");
+      try {
+        if (initialAuthToken) {
+            await signInWithCustomToken(auth, initialAuthToken);
+            console.log("Signed in with custom token.");
+        } else {
+            await signInAnonymously(auth);
+            console.log("Signed in anonymously.");
+        }
+      } catch (error) {
+        console.error("Firebase authentication error:", error);
+        document.getElementById('detail-title').textContent = "เกิดข้อผิดพลาดในการยืนยันตัวตน";
+        document.getElementById('description-area').textContent = "ไม่สามารถโหลดข้อมูลได้ กรุณาลองใหม่";
+      }
+    }
+  });
+
+  function setupRealtimeListenerForDetailPage() {
+    const urlParams = new URLSearchParams(window.location.search);
+    let imageCode = urlParams.get('id');
+
+    if (!imageCode) {
+        imageCode = '001'; // Fallback if no ID is provided
+        console.warn("No image ID found in URL. Defaulting to '001'.");
+    }
+
+    const imageDocRef = doc(db, `artifacts/${appId}/public/data/images`, imageCode);
+    onSnapshot(imageDocRef, (docSnapshot) => {
+      if (docSnapshot.exists()) {
+        const imageData = docSnapshot.data();
+        console.log("Detail Page: Real-time data update received for image:", imageCode, imageData);
+        document.getElementById('detail-image').src = imageData.imageUrl || 'https://placehold.co/500x500/cccccc/333333?text=ไม่มีรูปภาพ';
+        document.getElementById('detail-title').textContent = imageData.imageName || 'ไม่มีชื่อ';
+        document.getElementById('detail-code').textContent = `#${imageData.imageCode}`;
+        document.getElementById('description-area').textContent = imageData.description || 'ไม่มีรายละเอียด';
+
+        renderTags(document.getElementById('detail-tags-container'), imageData.tags);
+      } else {
+        console.error("No such document for imageCode:", imageCode);
+        document.getElementById('detail-title').textContent = "ไม่พบข้อมูลรูปภาพ";
+        document.getElementById('detail-code').textContent = "";
+        document.getElementById('description-area').textContent = "ไม่สามารถโหลดข้อมูลสำหรับรูปภาพนี้ได้ กรุณาตรวจสอบรหัส";
+      }
+    }, (error) => {
+      console.error("Error listening to Firestore in Detail Page:", error);
+      document.getElementById('detail-title').textContent = "เกิดข้อผิดพลาดในการโหลดข้อมูล";
+      document.getElementById('description-area').textContent = "ไม่สามารถโหลดข้อมูลได้ กรุณาลองใหม่";
+    });
+  }
+
+  function renderTags(tagsContainerElement, tagsArray) {
+   tagsContainerElement.innerHTML = ''; // ลบแท็กเก่าออกก่อน
+
+   if (tagsArray && Array.isArray(tagsArray)) {
+    tagsArray.forEach(tag => {
+     const span = document.createElement('span');
+     span.classList.add('detail-tag'); // ใช้ class สำหรับหน้า detail
+     span.textContent = `${tag.status || ''} ${tag.text || ''}`.trim();
+     tagsContainerElement.appendChild(span);
+    });
+   }
+  }
+
+  // JavaScript สำหรับ Dropdown Menu (จากงานเก่า)
+  function toggleMenu() {
+   const dropdown = document.getElementById('dropdown');
+   dropdown.style.display = (dropdown.style.display === 'block') ? 'none' : 'block';
+  }
+
+  window.onclick = function(event) {
+   const button = document.querySelector('.menu-button');
+   const dropdown = document.getElementById('dropdown');
+   // ตรวจสอบว่าคลิกนอกปุ่มเมนูและนอก dropdown
+   if (!button.contains(event.target) && !dropdown.contains(event.target)) {
+    dropdown.style.display = 'none';
+   }
+  }
+ </script>
+
+</body>
+</html>
