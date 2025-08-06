@@ -1,0 +1,344 @@
+/* CSS */
+<style>
+ body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: lightblue;
+ }
+
+ .navbar {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* เปลี่ยนเป็น center เพื่อให้เนื้อหาภายใน (navbar-inner) อยู่ตรงกลาง */
+  background-color: #ffffff;
+  padding: 30px 20px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2); /* เพิ่มเงาให้ดูมีมิติและลอยตัวมากขึ้น */
+  position: fixed; /* ทำให้แถบบาร์ลอยตัวอยู่กับที่ */
+  top: 10px; /* ระยะห่างจากขอบบนจอ */
+  left: 20px; /* ระยะห่างจากขอบซ้ายจอ */
+  right: 20px; /* ระยะห่างจากขอบขวาจอ */
+  width: auto; /* ให้ความกว้างปรับตาม left/right */
+  z-index: 1000;
+  box-sizing: border-box;
+  border: none; /* ลบเส้นขอบเดิมออก */
+  border-radius: 12px; /* ทำให้ขอบโค้งมนทั้งสี่ด้าน */
+  overflow: hidden; /* ซ่อนเนื้อหาที่อาจล้นออกไป */
+ }
+
+ .navbar-inner {
+  position: relative; /* คงไว้เพื่อเป็นจุดอ้างอิงสำหรับปุ่มที่ position: absolute */
+  width: 100%; /* ให้ navbar-inner มีความกว้างเต็มพื้นที่ของ navbar */
+  display: flex;
+  align-items: center;
+  justify-content: center; /* ทำให้โลโก้ BETA อยู่ตรงกลางภายใน navbar-inner */
+  box-sizing: border-box;
+ }
+
+ .menu-button, #search-button {
+  font-size: 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 12px;
+  position: absolute; /* คงไว้เพื่อให้ปุ่มจัดตำแหน่งอิสระ */
+ }
+
+ .menu-button {
+  left: 0; /* ชิดขอบซ้ายของ navbar-inner */
+ }
+
+ #search-button {
+  right: 0; /* ชิดขอบขวาของ navbar-inner */
+ }
+
+ .logo {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+  text-decoration: none;
+  position: absolute; /* ทำให้โลโก้จัดตำแหน่งอิสระ */
+  left: 50%; /* เลื่อนไปกึ่งกลาง */
+  transform: translateX(-50%); /* ปรับตำแหน่งให้กึ่งกลางจริงๆ */
+ }
+
+ .dropdown {
+  display: none;
+  position: fixed;
+  top: 60px;
+  left: 20px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border-radius: 4px;
+  min-width: 150px;
+  z-index: 2000;
+ }
+
+ .dropdown a {
+  display: block;
+  padding: 10px;
+  color: #333;
+  text-decoration: none;
+ }
+
+ .dropdown a:hover {
+  background-color: #f0f0f0;
+ }
+
+ .card-container {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 100px;
+  padding: 20px;
+  flex-wrap: wrap;
+ }
+
+ .card-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+ }
+
+ .card {
+  width: 200px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  transition: transform 0.2s;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  background-color: #ffffff;
+ }
+
+ .card:hover {
+  transform: scale(1.03);
+ }
+ 
+ .card.highlight {
+   box-shadow: 0 0 10px 5px #007bff;
+ }
+
+ .card img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 16px;
+ }
+
+ .card .title {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 4px 6px;
+  font-size: 13px;
+  font-weight: bold;
+  color: #ffffff;
+  text-align: center;
+  backdrop-filter: blur(2px);
+  box-sizing: border-box;
+  line-height: 1.2;
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+ }
+
+ .card .code {
+  font-size: 10px;
+  font-weight: normal;
+  color: #ffffff;
+  margin-top: 1px;
+ }
+
+ .card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding-top: 10px;
+  width: 200px;
+  justify-content: center;
+  align-items: center;
+ }
+
+ .card-tags .tag {
+  background-color: #f0f0f0;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  color: #333;
+  line-height: 1;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+ }
+
+ /* Responsive styles for mobile phones */
+ @media (max-width: 600px) {
+  .navbar {
+   top: 10px;
+   left: 10px;
+   right: 10px;
+   padding: 8px 15px;
+   border-radius: 8px;
+  }
+
+  .logo {
+   font-size: 18px;
+  }
+ }
+
+
+ /* Main Content Styles */
+body {
+ padding-top: 80px; /* เพิ่ม padding ด้านบนเพื่อไม่ให้เนื้อหาถูก Navbar บัง */
+ box-sizing: border-box;
+}
+
+.main-content {
+ display: flex;
+ flex-wrap: wrap; /* เพื่อให้ขึ้นบรรทัดใหม่ในมือถือ */
+ justify-content: center;
+ gap: 30px;
+ padding: 20px;
+ max-width: 1200px;
+ margin: 30px auto; /* จัดกึ่งกลางเนื้อหาหลัก */
+}
+
+.image-section {
+ flex: 1;
+ min-width: 300px; /* กำหนดความกว้างขั้นต่ำ */
+ max-width: 500px; /* กำหนดความกว้างสูงสุด */
+ background-color: #fff;
+ border-radius: 12px;
+ box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+ overflow: hidden;
+ display: flex;
+ justify-content: center;
+ align-items: center;
+ padding: 15px;
+ box-sizing: border-box;
+}
+
+.large-image {
+ width: 100%;
+ height: auto;
+ aspect-ratio: 1 / 1; /* รักษาสัดส่วน 1:1 */
+ object-fit: cover;
+ border-radius: 8px;
+}
+
+.details-section {
+ flex: 1;
+ min-width: 300px; /* กำหนดความกว้างขั้นต่ำ */
+ max-width: 500px; /* กำหนดความกว้างสูงสุด */
+ background-color: #fff;
+ padding: 25px;
+ border-radius: 12px;
+ box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+ display: flex;
+ flex-direction: column;
+ gap: 15px;
+ box-sizing: border-box;
+}
+
+.detail-title {
+ font-size: 28px;
+ font-weight: bold;
+ color: #333;
+ margin-bottom: 5px;
+}
+
+.detail-code {
+ font-size: 18px;
+ color: #666;
+ margin-bottom: 15px;
+}
+
+.detail-tags-label {
+ font-size: 16px;
+ font-weight: bold;
+ color: #333;
+ margin-bottom: 5px;
+}
+
+.detail-tags-container {
+ display: flex;
+ flex-wrap: wrap;
+ gap: 8px;
+ margin-bottom: 20px;
+}
+
+.detail-tag {
+ background-color: #e0e0e0;
+ padding: 6px 12px;
+ border-radius: 20px;
+ font-size: 14px;
+ color: #555;
+ display: flex;
+ align-items: center;
+ gap: 5px;
+}
+
+.description-area {
+ font-size: 16px;
+ line-height: 1.6;
+ color: #444;
+ background-color: #f8f9fa;
+ padding: 15px;
+ border-radius: 8px;
+ border: 1px solid #eee;
+ min-height: 150px;
+ text-align: left;
+ white-space: pre-wrap; /* รักษารูปแบบข้อความ */
+ word-wrap: break-word; /* ตัดคำเมื่อเกินขอบ */
+}
+
+/* Responsive styles for mobile phones (สำหรับหน้านี้) */
+@media (max-width: 768px) {
+ body {
+  padding-top: 70px; /* ปรับ padding ด้านบนสำหรับมือถือ */
+ }
+
+ .main-content {
+  flex-direction: column; /* จัดเรียงเป็นคอลัมน์เดียว */
+  align-items: center;
+  padding: 15px;
+  margin-top: 20px;
+ }
+
+ .image-section, .details-section {
+  width: 100%;
+  max-width: none; /* ลบ max-width เพื่อให้เต็มความกว้าง */
+ }
+
+ .image-section {
+  padding: 10px;
+ }
+
+ .details-section {
+  padding: 20px;
+ }
+
+ .detail-title {
+  font-size: 24px;
+ }
+
+ .detail-code {
+  font-size: 16px;
+ }
+
+ .detail-tag {
+  font-size: 12px;
+  padding: 5px 10px;
+ }
+
+ .description-area {
+  font-size: 14px;
+ }
+}
+</style>
